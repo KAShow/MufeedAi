@@ -20,9 +20,9 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       <header className="border-b bg-white">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">AI Prompt Builder</h1>
+          <h1 className="text-2xl font-bold">منشئ النصوص الذكي</h1>
           <Button variant="default" onClick={() => setIsExportOpen(true)}>
-            Export Prompt
+            تصدير النص
           </Button>
         </div>
       </header>

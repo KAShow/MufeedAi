@@ -39,7 +39,7 @@ export default function ExportDialog({
   const data = promptData?.goals ? promptData : defaultPromptData;
 
   const getTextFormat = () => {
-    return `Prompt Goals:\n${data.goals}\n\nTarget Audience:\n${data.audience}\n\nTechnical Requirements:\n${data.requirements}\n\nDesign Preferences:\n${data.preferences}`;
+    return `الأهداف:\n${data.goals}\n\nالجمهور المستهدف:\n${data.audience}\n\nالمتطلبات التقنية:\n${data.requirements}\n\nتفضيلات التصميم:\n${data.preferences}`;
   };
 
   const getJsonFormat = () => {
@@ -47,7 +47,7 @@ export default function ExportDialog({
   };
 
   const getMarkdownFormat = () => {
-    return `# AI Prompt\n\n## Prompt Goals\n${data.goals}\n\n## Target Audience\n${data.audience}\n\n## Technical Requirements\n${data.requirements}\n\n## Design Preferences\n${data.preferences}`;
+    return `# منشئ النصوص الذكي\n\n## الأهداف\n${data.goals}\n\n## الجمهور المستهدف\n${data.audience}\n\n## المتطلبات التقنية\n${data.requirements}\n\n## تفضيلات التصميم\n${data.preferences}`;
   };
 
   const copyToClipboard = (text: string) => {
@@ -61,17 +61,15 @@ export default function ExportDialog({
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] bg-white">
         <DialogHeader>
-          <DialogTitle>Export Prompt</DialogTitle>
-          <DialogDescription>
-            Choose your preferred format to export the prompt
-          </DialogDescription>
+          <DialogTitle>تصدير النص</DialogTitle>
+          <DialogDescription>اختر الصيغة المفضلة لتصدير النص</DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="text" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="text">Text</TabsTrigger>
+            <TabsTrigger value="text">نص</TabsTrigger>
             <TabsTrigger value="json">JSON</TabsTrigger>
-            <TabsTrigger value="markdown">Markdown</TabsTrigger>
+            <TabsTrigger value="markdown">ماركداون</TabsTrigger>
           </TabsList>
 
           <TabsContent value="text">
