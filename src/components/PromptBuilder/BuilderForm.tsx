@@ -32,10 +32,10 @@ interface BuilderFormProps {
 }
 
 const defaultFormData: FormData = {
-  goals: "Create an engaging user interface",
-  audience: "Web developers and designers",
-  requirements: "Must be responsive and accessible",
-  preferences: "Modern, minimalist design style",
+  goals: "إنشاء واجهة مستخدم جذابة",
+  audience: "مطورو الويب والمصممون",
+  requirements: "يجب أن تكون متجاوبة وسهلة الوصول",
+  preferences: "نمط تصميم حديث وبسيط",
 };
 
 export default function BuilderForm({
@@ -50,7 +50,6 @@ export default function BuilderForm({
     onFormUpdate?.(data);
   };
 
-  // Update preview on form changes
   React.useEffect(() => {
     const subscription = form.watch((value) => {
       onFormUpdate?.(value as FormData);
@@ -65,7 +64,7 @@ export default function BuilderForm({
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="goals">
               <AccordionTrigger className="text-lg font-semibold">
-                Prompt Goals
+                الأهداف
               </AccordionTrigger>
               <AccordionContent>
                 <FormField
@@ -73,18 +72,16 @@ export default function BuilderForm({
                   name="goals"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        What do you want to achieve with this prompt?
-                      </FormLabel>
+                      <FormLabel>ما الذي تريد تحقيقه من هذا النص؟</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Enter your prompt goals..."
+                          placeholder="أدخل أهدافك هنا..."
                           className="min-h-[100px]"
                           {...field}
                         />
                       </FormControl>
                       <FormDescription>
-                        Describe the main objectives and desired outcomes.
+                        صف الأهداف الرئيسية والنتائج المرجوة
                       </FormDescription>
                     </FormItem>
                   )}
@@ -94,7 +91,7 @@ export default function BuilderForm({
 
             <AccordionItem value="audience">
               <AccordionTrigger className="text-lg font-semibold">
-                Target Audience
+                الجمهور المستهدف
               </AccordionTrigger>
               <AccordionContent>
                 <FormField
@@ -102,15 +99,15 @@ export default function BuilderForm({
                   name="audience"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Who is this prompt intended for?</FormLabel>
+                      <FormLabel>لمن يتوجه هذا النص؟</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Define your target audience..."
+                          placeholder="حدد جمهورك المستهدف..."
                           {...field}
                         />
                       </FormControl>
                       <FormDescription>
-                        Specify the intended users or audience for this prompt.
+                        حدد الفئة المستهدفة لهذا النص
                       </FormDescription>
                     </FormItem>
                   )}
@@ -120,7 +117,7 @@ export default function BuilderForm({
 
             <AccordionItem value="requirements">
               <AccordionTrigger className="text-lg font-semibold">
-                Technical Requirements
+                المتطلبات التقنية
               </AccordionTrigger>
               <AccordionContent>
                 <FormField
@@ -128,19 +125,16 @@ export default function BuilderForm({
                   name="requirements"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        What are the technical specifications?
-                      </FormLabel>
+                      <FormLabel>ما هي المواصفات التقنية؟</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="List technical requirements..."
+                          placeholder="اذكر المتطلبات التقنية..."
                           className="min-h-[100px]"
                           {...field}
                         />
                       </FormControl>
                       <FormDescription>
-                        Include any specific technical constraints or
-                        requirements.
+                        أضف أي متطلبات أو قيود تقنية محددة
                       </FormDescription>
                     </FormItem>
                   )}
@@ -150,7 +144,7 @@ export default function BuilderForm({
 
             <AccordionItem value="preferences">
               <AccordionTrigger className="text-lg font-semibold">
-                Design Preferences
+                تفضيلات التصميم
               </AccordionTrigger>
               <AccordionContent>
                 <FormField
@@ -158,17 +152,16 @@ export default function BuilderForm({
                   name="preferences"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>What are your design preferences?</FormLabel>
+                      <FormLabel>ما هي تفضيلاتك في التصميم؟</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Describe design preferences..."
+                          placeholder="صف تفضيلات التصميم..."
                           className="min-h-[100px]"
                           {...field}
                         />
                       </FormControl>
                       <FormDescription>
-                        Specify any design styles, themes, or visual
-                        preferences.
+                        حدد أنماط التصميم والمظهر المرئي المفضل
                       </FormDescription>
                     </FormItem>
                   )}
@@ -183,9 +176,9 @@ export default function BuilderForm({
               variant="outline"
               onClick={() => form.reset(defaultFormData)}
             >
-              Reset
+              إعادة تعيين
             </Button>
-            <Button type="submit">Save</Button>
+            <Button type="submit">حفظ</Button>
           </div>
         </form>
       </Form>

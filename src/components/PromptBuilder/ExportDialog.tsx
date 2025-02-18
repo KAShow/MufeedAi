@@ -67,8 +67,8 @@ export default function ExportDialog({
 
         <Tabs defaultValue="text" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="text">نص</TabsTrigger>
-            <TabsTrigger value="json">JSON</TabsTrigger>
+            <TabsTrigger value="text">نص عادي</TabsTrigger>
+            <TabsTrigger value="json">جيسون</TabsTrigger>
             <TabsTrigger value="markdown">ماركداون</TabsTrigger>
           </TabsList>
 
