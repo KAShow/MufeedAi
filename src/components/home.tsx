@@ -17,27 +17,11 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="container mx-auto px-2 sm:px-4 py-3 sm:py-6">
+      <main className="container mx-auto px-2 py-2 sm:py-4">
         <div className="h-[calc(100vh-8rem)]">
           <PromptBuilderLayout />
         </div>
       </main>
-
-      <footer className="border-t bg-gradient-to-r from-primary/5 to-secondary/5 py-4 mt-8">
-        <div className="container mx-auto px-4 text-center">
-          <div className="text-sm text-muted-foreground">
-            برنامج مفتوح المصدر صنع بواسطة
-            <a
-              href="https://github.com/KAShow/MufeedAi"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline mr-1"
-            >
-              خليفة شويطر
-            </a>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

@@ -24,14 +24,23 @@ ${data.audience}
 ${data.requirements}
 
 ## تفضيلات التصميم
-${data.preferences}`;
+${data.preferences}
+
+## الميزات التفاعلية
+${data.features}
+
+## المحتوى والتسويق
+${data.content}
+
+## الأمن والخصوصية
+${data.security}`;
 
     setPromptContent(content);
     onSave?.(data);
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-full">
       <BuilderForm onFormUpdate={handleFormUpdate} />
       <PreviewPanel promptContent={promptContent} />
     </div>
