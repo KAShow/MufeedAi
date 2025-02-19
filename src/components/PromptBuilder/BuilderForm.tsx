@@ -214,7 +214,7 @@ export default function BuilderForm({
   };
 
   return (
-    <Card className="h-full w-full bg-gradient-to-br from-white via-purple-50/30 to-blue-50/30 p-6 flex flex-col shadow-lg transition-all duration-300 hover:shadow-xl">
+    <Card className="h-full w-full bg-gradient-to-br from-white via-purple-50/30 to-blue-50/30 p-3 sm:p-6 flex flex-col shadow-lg transition-all duration-300 hover:shadow-xl">
       <Form {...form}>
         <div className="flex-1 flex flex-col">
           <div className="mb-8">
@@ -251,7 +251,7 @@ export default function BuilderForm({
                   اقتراحات مفيدة:
                 </h3>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1 sm:gap-2">
                 {currentExamples[currentFieldId].map((example, index) => (
                   <Button
                     key={index}

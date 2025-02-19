@@ -64,10 +64,10 @@ const PreviewPanel = ({
   };
 
   return (
-    <div className="h-full w-full bg-background p-4">
+    <div className="h-full w-full bg-background p-2 sm:p-4">
       <Card className="h-full w-full bg-gradient-to-br from-white to-blue-50/50 shadow-lg transition-all duration-300 hover:shadow-xl">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
+        <div className="p-3 sm:p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 mb-4">
             <h2 className="text-2xl font-semibold">معاينة</h2>
             <div className="flex gap-2">
               <Button
