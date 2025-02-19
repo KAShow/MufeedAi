@@ -5,6 +5,7 @@ import { Separator } from "../ui/separator";
 import { Button } from "../ui/button";
 import { Copy, Wand2, Loader2 } from "lucide-react";
 import { generateAIPrompt } from "@/lib/openai";
+import ApiKeyDialog from "./ApiKeyDialog";
 
 interface PreviewPanelProps {
   promptContent?: string;
@@ -37,7 +38,15 @@ const PreviewPanel = ({
     navigator.clipboard.writeText(aiPrompt || promptContent);
   };
 
+  const [showApiDialog, setShowApiDialog] = React.useState(false);
+
   const handleConvertToPrompt = async () => {
+    const apiKey = localStorage.getItem("openai_api_key");
+    if (!apiKey) {
+      setShowApiDialog(true);
+      return;
+    }
+
     const lastUsage = localStorage.getItem("lastPromptGeneration");
     if (lastUsage) {
       const timeSinceLastUsage = Date.now() - parseInt(lastUsage);
@@ -65,6 +74,14 @@ const PreviewPanel = ({
 
   return (
     <div className="h-full w-full bg-background p-2 sm:p-4">
+      <ApiKeyDialog
+        open={showApiDialog}
+        onOpenChange={setShowApiDialog}
+        onSuccess={() => {
+          setShowApiDialog(false);
+          handleConvertToPrompt();
+        }}
+      />
       <Card className="h-full w-full bg-gradient-to-br from-white to-blue-50/50 shadow-lg transition-all duration-300 hover:shadow-xl">
         <div className="p-3 sm:p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 mb-4">

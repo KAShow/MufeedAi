@@ -1,4 +1,4 @@
-let apiKey: string | null = import.meta.env.VITE_OPENAI_API_KEY || null;
+let apiKey: string | null = localStorage.getItem("openai_api_key");
 
 export const setApiKey = (key: string) => {
   apiKey = key;

@@ -30,6 +30,7 @@ export default function ApiKeyDialog({
       setError("يجب أن يبدأ مفتاح API بـ 'sk-'");
       return;
     }
+    localStorage.setItem("openai_api_key", key);
     setApiKey(key);
     onSuccess();
     onOpenChange(false);
