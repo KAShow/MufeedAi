@@ -1,5 +1,4 @@
-let apiKey: string | null =
-  "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";
+let apiKey: string | null = import.meta.env.VITE_OPENAI_API_KEY || null;
 
 export const setApiKey = (key: string) => {
   apiKey = key;

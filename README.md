@@ -40,6 +40,8 @@
 git clone https://github.com/KAShow/MufeedAi.git
 cd MufeedAi
 npm install
+cp .env.example .env  # قم بنسخ ملف البيئة المثال
+# قم بتعديل ملف .env ووضع مفتاح OpenAI API الخاص بك
 npm run dev
 ```
 
