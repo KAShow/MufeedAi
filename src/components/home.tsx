@@ -14,7 +14,18 @@ export default function Home() {
               موقع يساعدك تبني مواقع
             </p>
           </div>
-          <div className="text-sm text-muted-foreground text-left">
+        </div>
+      </header>
+
+      <main className="container mx-auto px-2 sm:px-4 py-3 sm:py-6">
+        <div className="h-[calc(100vh-8rem)]">
+          <PromptBuilderLayout />
+        </div>
+      </main>
+
+      <footer className="border-t bg-gradient-to-r from-primary/5 to-secondary/5 py-4 mt-8">
+        <div className="container mx-auto px-4 text-center">
+          <div className="text-sm text-muted-foreground">
             برنامج مفتوح المصدر صنع بواسطة
             <a
               href="https://github.com/KAShow/MufeedAi"
@@ -26,13 +37,7 @@ export default function Home() {
             </a>
           </div>
         </div>
-      </header>
-
-      <main className="container mx-auto px-2 sm:px-4 py-3 sm:py-6">
-        <div className="h-[calc(100vh-8rem)]">
-          <PromptBuilderLayout />
-        </div>
-      </main>
+      </footer>
     </div>
   );
 }

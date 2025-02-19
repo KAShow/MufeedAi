@@ -37,7 +37,6 @@ const PreviewPanel = ({
 
       const generatedPrompt = await generateAIPrompt(promptContent, "gemini");
       setAiPrompt(generatedPrompt);
-      navigator.clipboard.writeText(generatedPrompt);
     } catch (error) {
       setError("حدث خطأ أثناء توليد البرومت");
     } finally {
