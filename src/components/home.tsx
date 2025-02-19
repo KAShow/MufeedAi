@@ -22,7 +22,7 @@ export default function Home() {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold">منشئ النصوص الذكي</h1>
           <Button variant="default" onClick={() => setIsExportOpen(true)}>
-            تصدير النص
+            تصدير
           </Button>
         </div>
       </header>
