@@ -4,7 +4,7 @@ import { ScrollArea } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
 import { Button } from "../ui/button";
 import { Copy, Wand2, Loader2 } from "lucide-react";
-import { generateAIPrompt } from "@/lib/openai";
+import { generateAIPrompt, getApiKey } from "@/lib/openai";
 import ApiKeyDialog from "./ApiKeyDialog";
 
 interface PreviewPanelProps {
@@ -17,53 +17,26 @@ const PreviewPanel = ({
   const [aiPrompt, setAiPrompt] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState("");
-  const [timeLeft, setTimeLeft] = React.useState<number>(0);
-
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      const lastUsage = localStorage.getItem("lastPromptGeneration");
-      if (lastUsage) {
-        const timeSinceLastUsage = Date.now() - parseInt(lastUsage);
-        const remainingTime = Math.max(
-          0,
-          Math.ceil((180000 - timeSinceLastUsage) / 1000),
-        );
-        setTimeLeft(remainingTime);
-      }
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  const [showApiDialog, setShowApiDialog] = React.useState(false);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(aiPrompt || promptContent);
   };
 
-  const [showApiDialog, setShowApiDialog] = React.useState(false);
-
   const handleConvertToPrompt = async () => {
-    const apiKey = localStorage.getItem("openai_api_key");
-    if (!apiKey) {
-      setShowApiDialog(true);
-      return;
-    }
-
-    const lastUsage = localStorage.getItem("lastPromptGeneration");
-    if (lastUsage) {
-      const timeSinceLastUsage = Date.now() - parseInt(lastUsage);
-      if (timeSinceLastUsage < 180000) {
-        // 3 minutes in milliseconds
-        setError(
-          `يرجى الانتظار ${Math.ceil((180000 - timeSinceLastUsage) / 1000)} ثانية قبل المحاولة مرة أخرى`,
-        );
-        return;
-      }
-    }
     try {
       setIsLoading(true);
       setError("");
-      const generatedPrompt = await generateAIPrompt(promptContent);
+      const apiKey = getApiKey("gemini");
+
+      if (!apiKey) {
+        setShowApiDialog(true);
+        setIsLoading(false);
+        return;
+      }
+
+      const generatedPrompt = await generateAIPrompt(promptContent, "gemini");
       setAiPrompt(generatedPrompt);
-      localStorage.setItem("lastPromptGeneration", Date.now().toString());
       navigator.clipboard.writeText(generatedPrompt);
     } catch (error) {
       setError("حدث خطأ أثناء توليد البرومت");
@@ -79,7 +52,6 @@ const PreviewPanel = ({
         onOpenChange={setShowApiDialog}
         onSuccess={() => {
           setShowApiDialog(false);
-          handleConvertToPrompt();
         }}
       />
       <Card className="h-full w-full bg-gradient-to-br from-white to-blue-50/50 shadow-lg transition-all duration-300 hover:shadow-xl">
@@ -97,15 +69,20 @@ const PreviewPanel = ({
                 نسخ النص
               </Button>
               <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowApiDialog(true)}
+                className="gap-2"
+              >
+                تركيب المفتاح
+              </Button>
+              <Button
                 variant="default"
                 size="sm"
                 onClick={handleConvertToPrompt}
                 className="gap-2"
-                disabled={isLoading || timeLeft > 0}
+                disabled={isLoading}
               >
-                {timeLeft > 0 && (
-                  <span className="text-xs opacity-75 mr-1">({timeLeft}ث)</span>
-                )}
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (

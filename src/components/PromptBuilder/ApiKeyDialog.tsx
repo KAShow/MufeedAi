@@ -6,9 +6,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AI_PROVIDERS } from "@/lib/ai-providers";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { setApiKey } from "@/lib/openai";
 
 interface ApiKeyDialogProps {
   open: boolean;
@@ -16,22 +17,125 @@ interface ApiKeyDialogProps {
   onSuccess: () => void;
 }
 
+interface ApiKeyFormProps {
+  providerId: string;
+  onSubmit: (key: string) => void;
+}
+
+function ApiKeyForm({ providerId, onSubmit }: ApiKeyFormProps) {
+  const [key, setKey] = React.useState(
+    () => localStorage.getItem(`${providerId}_api_key`) || "",
+  );
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [rememberKey, setRememberKey] = React.useState(true);
+  const [error, setError] = React.useState("");
+  const provider = AI_PROVIDERS.find((p) => p.id === providerId);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!provider) return;
+
+    if (!key.startsWith(provider.keyPrefix)) {
+      setError(`يجب أن يبدأ المفتاح بـ '${provider.keyPrefix}'`);
+      return;
+    }
+
+    onSubmit(key, rememberKey);
+  };
+
+  if (!provider) return null;
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2 relative">
+        {key && !isEditing ? (
+          <div className="flex items-center gap-2">
+            <Input type="password" value="••••••••" disabled />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsEditing(true)}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                <path d="m15 5 4 4" />
+              </svg>
+            </Button>
+          </div>
+        ) : (
+          <Input
+            type="password"
+            placeholder={provider.keyPlaceholder}
+            value={key}
+            onChange={(e) => {
+              setKey(e.target.value);
+              setError("");
+            }}
+            className="font-mono"
+          />
+        )}
+        {error && <p className="text-sm text-red-500">{error}</p>}
+        <p className="text-sm text-muted-foreground">
+          يمكنك الحصول على المفتاح من:
+          <a
+            href={provider.keyInstructions}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline mr-1"
+          >
+            {provider.name}
+          </a>
+        </p>
+      </div>
+      <div className="flex items-center gap-2 mb-4">
+        <input
+          type="checkbox"
+          id="remember"
+          checked={rememberKey}
+          onChange={(e) => setRememberKey(e.target.checked)}
+          className="h-4 w-4 rounded border-gray-300"
+        />
+        <label htmlFor="remember" className="text-sm text-gray-600 mr-2">
+          حفظ المفتاح لمدة أسبوع
+        </label>
+      </div>
+      <Button type="submit" className="w-full">
+        حفظ
+      </Button>
+    </form>
+  );
+}
+
 export default function ApiKeyDialog({
   open,
   onOpenChange,
   onSuccess,
 }: ApiKeyDialogProps) {
-  const [key, setKey] = React.useState("");
-  const [error, setError] = React.useState("");
+  const [selectedProvider] = React.useState("gemini");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!key.startsWith("sk-")) {
-      setError("يجب أن يبدأ مفتاح API بـ 'sk-'");
-      return;
+  const handleSubmit = (key: string, remember: boolean) => {
+    if (remember) {
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 7);
+      localStorage.setItem(`${selectedProvider}_api_key`, key);
+      localStorage.setItem(
+        `${selectedProvider}_api_key_expiry`,
+        expiryDate.toISOString(),
+      );
+    } else {
+      sessionStorage.setItem(`${selectedProvider}_api_key`, key);
     }
-    localStorage.setItem("openai_api_key", key);
-    setApiKey(key);
     onSuccess();
     onOpenChange(false);
   };
@@ -40,29 +144,12 @@ export default function ApiKeyDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] bg-white">
         <DialogHeader>
-          <DialogTitle>إدخال مفتاح OpenAI API</DialogTitle>
+          <DialogTitle>إدخال مفتاح API</DialogTitle>
           <DialogDescription>
-            أدخل مفتاح API الخاص بك لتفعيل ميزة تحويل النص إلى برومت ذكي
+            اختر مزود الذكاء الاصطناعي وأدخل مفتاح API الخاص بك
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Input
-              type="password"
-              placeholder="sk-..."
-              value={key}
-              onChange={(e) => {
-                setKey(e.target.value);
-                setError("");
-              }}
-              className="font-mono"
-            />
-            {error && <p className="text-sm text-red-500">{error}</p>}
-          </div>
-          <Button type="submit" className="w-full">
-            حفظ
-          </Button>
-        </form>
+        <ApiKeyForm providerId="gemini" onSubmit={handleSubmit} />
       </DialogContent>
     </Dialog>
   );
