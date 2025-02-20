@@ -27,20 +27,16 @@ function ApiKeyForm({ providerId, onSubmit }: ApiKeyFormProps) {
     () => localStorage.getItem(`${providerId}_api_key`) || "",
   );
   const [isEditing, setIsEditing] = React.useState(false);
-  const [rememberKey, setRememberKey] = React.useState(true);
   const [error, setError] = React.useState("");
   const provider = AI_PROVIDERS.find((p) => p.id === providerId);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!provider) return;
+    if (!provider || !key) return;
 
-    if (!key.startsWith(provider.keyPrefix)) {
-      setError(`يجب أن يبدأ المفتاح بـ '${provider.keyPrefix}'`);
-      return;
-    }
-
-    onSubmit(key, rememberKey);
+    // حفظ المفتاح مباشرة في localStorage
+    localStorage.setItem(`${providerId}_api_key`, key);
+    onSubmit(key);
   };
 
   if (!provider) return null;
@@ -98,18 +94,7 @@ function ApiKeyForm({ providerId, onSubmit }: ApiKeyFormProps) {
           </a>
         </p>
       </div>
-      <div className="flex items-center gap-2 mb-4">
-        <input
-          type="checkbox"
-          id="remember"
-          checked={rememberKey}
-          onChange={(e) => setRememberKey(e.target.checked)}
-          className="h-4 w-4 rounded border-gray-300"
-        />
-        <label htmlFor="remember" className="text-sm text-gray-600 mr-2">
-          حفظ المفتاح لمدة أسبوع
-        </label>
-      </div>
+
       <Button type="submit" className="w-full">
         حفظ
       </Button>
@@ -124,18 +109,8 @@ export default function ApiKeyDialog({
 }: ApiKeyDialogProps) {
   const [selectedProvider] = React.useState("gemini");
 
-  const handleSubmit = (key: string, remember: boolean) => {
-    if (remember) {
-      const expiryDate = new Date();
-      expiryDate.setDate(expiryDate.getDate() + 7);
-      localStorage.setItem(`${selectedProvider}_api_key`, key);
-      localStorage.setItem(
-        `${selectedProvider}_api_key_expiry`,
-        expiryDate.toISOString(),
-      );
-    } else {
-      sessionStorage.setItem(`${selectedProvider}_api_key`, key);
-    }
+  const handleSubmit = (key: string) => {
+    localStorage.setItem(`${selectedProvider}_api_key`, key);
     onSuccess();
     onOpenChange(false);
   };

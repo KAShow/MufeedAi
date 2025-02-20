@@ -1,21 +1,12 @@
 import { AI_PROVIDERS } from "./ai-providers";
 
 export const getApiKey = (providerId: string) => {
-  const storedKey = localStorage.getItem(`${providerId}_api_key`);
-  const expiry = localStorage.getItem(`${providerId}_api_key_expiry`);
+  // أولاً نحاول الحصول على المفتاح من ملف .env
+  const envKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (envKey) return envKey;
 
-  if (storedKey && expiry) {
-    const expiryDate = new Date(expiry);
-    if (expiryDate > new Date()) {
-      return storedKey;
-    } else {
-      localStorage.removeItem(`${providerId}_api_key`);
-      localStorage.removeItem(`${providerId}_api_key_expiry`);
-      return null;
-    }
-  }
-
-  return sessionStorage.getItem(`${providerId}_api_key`);
+  // إذا لم يكن هناك مفتاح في .env، نبحث في localStorage
+  return localStorage.getItem(`${providerId}_api_key`);
 };
 
 export const generateAIPrompt = async (

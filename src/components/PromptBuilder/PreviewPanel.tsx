@@ -12,9 +12,7 @@ interface PreviewPanelProps {
 }
 
 const PreviewPanel = ({
-  promptContent = `# نموذج النص
-
-هذا عرض مسبق للنص الذكي. أثناء بناء النص باستخدام النموذج على اليسار، سترى التحديثات هنا مباشرة.
+  promptContent = `هذا عرض مسبق للنص. أثناء بناء النص باستخدام النموذج على اليسار، سترى التحديثات هنا مباشرة.
 
 ## الأهداف
 اكتب أهداف المشروع...
@@ -42,8 +40,15 @@ const PreviewPanel = ({
   const [error, setError] = React.useState("");
   const [showApiDialog, setShowApiDialog] = React.useState(false);
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(aiPrompt || promptContent);
+  const copyToClipboard = async () => {
+    try {
+      const textToCopy = aiPrompt || promptContent;
+      await navigator.clipboard.writeText(textToCopy);
+    } catch (err) {
+      console.error("Failed to copy text:", err);
+      setError("حدث خطأ أثناء نسخ النص");
+      setTimeout(() => setError(""), 3000);
+    }
   };
 
   const handleConvertToPrompt = async () => {
@@ -67,6 +72,29 @@ const PreviewPanel = ({
     }
   };
 
+  const formatContent = (content: string) => {
+    return content.split("\n\n").map((section, index) => {
+      if (section.startsWith("## ")) {
+        const [title, ...content] = section.split("\n");
+        return (
+          <div key={index} className="space-y-3">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              {title.replace("## ", "")}
+            </h2>
+            <div className="text-gray-600 text-lg leading-relaxed pl-4 border-r-2 border-primary/20 pr-4">
+              {content.join("\n")}
+            </div>
+          </div>
+        );
+      }
+      return (
+        <p key={index} className="text-gray-600 text-lg leading-relaxed">
+          {section}
+        </p>
+      );
+    });
+  };
+
   return (
     <div className="h-full w-full bg-background p-2 flex flex-col">
       <ApiKeyDialog
@@ -76,16 +104,18 @@ const PreviewPanel = ({
           setShowApiDialog(false);
         }}
       />
-      <Card className="flex-1 w-full bg-gradient-to-br from-white to-blue-50/50 shadow-lg transition-all duration-300 hover:shadow-xl">
+      <Card className="flex-1 w-full bg-gradient-to-br from-white via-purple-50/10 to-blue-50/20 shadow-lg transition-all duration-300 hover:shadow-xl border border-primary/10">
         <div className="p-2 sm:p-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 mb-4">
-            <h2 className="text-2xl font-semibold">معاينة</h2>
+            <h2 className="text-2xl font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              معاينة
+            </h2>
             <div className="flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={copyToClipboard}
-                className="gap-2"
+                className="gap-2 hover:bg-primary hover:text-white transition-colors"
               >
                 <Copy className="h-4 w-4" />
                 نسخ النص
@@ -94,7 +124,7 @@ const PreviewPanel = ({
                 variant="outline"
                 size="sm"
                 onClick={() => setShowApiDialog(true)}
-                className="gap-2"
+                className="gap-2 hover:bg-primary hover:text-white transition-colors"
               >
                 تركيب المفتاح
               </Button>
@@ -102,7 +132,7 @@ const PreviewPanel = ({
                 variant="default"
                 size="sm"
                 onClick={handleConvertToPrompt}
-                className="gap-2"
+                className="gap-2 bg-gradient-to-r from-primary to-secondary hover:opacity-90"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -120,9 +150,9 @@ const PreviewPanel = ({
               {error}
             </div>
           )}
-          <ScrollArea className="h-[calc(100vh-10rem)] w-full rounded-md border p-3">
-            <div className="whitespace-pre-wrap font-mono text-sm">
-              {aiPrompt || promptContent}
+          <ScrollArea className="h-[calc(100vh-10rem)] w-full rounded-md border border-primary/10 bg-white/50 backdrop-blur-sm p-6">
+            <div className="space-y-8">
+              {formatContent(aiPrompt || promptContent)}
             </div>
           </ScrollArea>
         </div>

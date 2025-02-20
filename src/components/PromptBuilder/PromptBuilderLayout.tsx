@@ -12,9 +12,7 @@ export default function PromptBuilderLayout({
   const [promptContent, setPromptContent] = React.useState("");
 
   const handleFormUpdate = (data: any) => {
-    const content = `# النص الذكي
-
-## الأهداف
+    const content = `## الأهداف
 ${data.goals}
 
 ## الجمهور المستهدف
