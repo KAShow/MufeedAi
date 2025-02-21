@@ -39,6 +39,7 @@ const PreviewPanel = ({
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState("");
   const [showApiDialog, setShowApiDialog] = React.useState(false);
+  const [isGenerating, setIsGenerating] = React.useState(false);
 
   const copyToClipboard = async () => {
     try {
@@ -52,43 +53,81 @@ const PreviewPanel = ({
   };
 
   const handleConvertToPrompt = async () => {
+    if (isGenerating) return;
+
     try {
+      setIsGenerating(true);
       setIsLoading(true);
       setError("");
-      const apiKey = getApiKey("gemini");
+      const apiKey = getApiKey("openrouter");
 
       if (!apiKey) {
         setShowApiDialog(true);
-        setIsLoading(false);
         return;
       }
 
-      const generatedPrompt = await generateAIPrompt(promptContent, "gemini");
+      const generatedPrompt = await generateAIPrompt(
+        promptContent,
+        "openrouter",
+      );
       setAiPrompt(generatedPrompt);
     } catch (error) {
       setError("حدث خطأ أثناء توليد البرومت");
     } finally {
       setIsLoading(false);
+      setIsGenerating(false);
     }
   };
 
   const formatContent = (content: string) => {
     return content.split("\n\n").map((section, index) => {
+      // Handle section headers
       if (section.startsWith("## ")) {
         const [title, ...content] = section.split("\n");
         return (
-          <div key={index} className="space-y-3">
+          <div key={index} className="space-y-4">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               {title.replace("## ", "")}
             </h2>
             <div className="text-gray-600 text-lg leading-relaxed pl-4 border-r-2 border-primary/20 pr-4">
-              {content.join("\n")}
+              {content.map((line, i) => {
+                // Handle bullet points
+                if (line.startsWith("* ")) {
+                  return (
+                    <div key={i} className="flex items-start gap-2 mb-2">
+                      <span className="text-primary mt-2">•</span>
+                      <span>{line.replace("* ", "")}</span>
+                    </div>
+                  );
+                }
+                // Handle code blocks
+                if (line.startsWith("```")) {
+                  const codeContent = line
+                    .replace(/^```\w*\n?/, "")
+                    .replace(/```$/, "");
+                  return (
+                    <pre
+                      key={i}
+                      className="bg-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto"
+                    >
+                      {codeContent}
+                    </pre>
+                  );
+                }
+                // Handle normal text
+                return (
+                  <p key={i} className="mb-2">
+                    {line}
+                  </p>
+                );
+              })}
             </div>
           </div>
         );
       }
+      // Handle non-section text
       return (
-        <p key={index} className="text-gray-600 text-lg leading-relaxed">
+        <p key={index} className="text-gray-600 text-lg leading-relaxed mb-4">
           {section}
         </p>
       );
@@ -133,7 +172,7 @@ const PreviewPanel = ({
                 size="sm"
                 onClick={handleConvertToPrompt}
                 className="gap-2 bg-gradient-to-r from-primary to-secondary hover:opacity-90"
-                disabled={isLoading}
+                disabled={isGenerating || isLoading}
               >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

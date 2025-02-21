@@ -2,7 +2,7 @@ import { AI_PROVIDERS } from "./ai-providers";
 
 export const getApiKey = (providerId: string) => {
   // أولاً نحاول الحصول على المفتاح من ملف .env
-  const envKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const envKey = import.meta.env.VITE_OPENROUTER_API_KEY;
   if (envKey) return envKey;
 
   // إذا لم يكن هناك مفتاح في .env، نبحث في localStorage
@@ -11,7 +11,7 @@ export const getApiKey = (providerId: string) => {
 
 export const generateAIPrompt = async (
   content: string,
-  providerId = "gemini",
+  providerId = "openrouter",
 ): Promise<string> => {
   const provider = AI_PROVIDERS.find((p) => p.id === providerId);
   if (!provider) throw new Error("مزود غير معروف");
@@ -20,22 +20,24 @@ export const generateAIPrompt = async (
   if (!apiKey) throw new Error("API Key غير متوفر");
 
   try {
-    const response = await fetch(`${provider.apiEndpoint}?key=${apiKey}`, {
+    const response = await fetch(provider.apiEndpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Content-Type": "application/json",
+        "HTTP-Referer": "https://tempolabs.ai",
+        "X-Title": "Tempo Labs",
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        contents: [
+        model: provider.model,
+        messages: [
           {
-            parts: [
-              {
-                text: `قم بتحويل المتطلبات التالية إلى برومت منظم ومفصل:\n\n${content}\n\nيجب أن يتضمن البرومت:\n1. وصف دقيق للموقع وأهدافه\n2. تفاصيل الجمهور المستهدف\n3. المتطلبات التقنية والتكنولوجيا المستخدمة\n4. تفاصيل التصميم والهوية البصرية\n5. أي متطلبات إضافية مهمة`,
-              },
-            ],
+            role: "user",
+            content: `أريد برومت لإنشاء موقع مع المواصفات التالية:\n\n${content}\n\nأرجو تحليل هذه المواصفات وإعطائي برومت مناسب لإنشاء هذا الموقع.`,
           },
         ],
+        temperature: 0.7,
+        max_tokens: 2048,
       }),
     });
 
@@ -48,10 +50,7 @@ export const generateAIPrompt = async (
     const data = await response.json();
     console.log("API Response:", data);
 
-    return (
-      data.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "خطأ في معالجة الاستجابة"
-    );
+    return data.choices?.[0]?.message?.content || "خطأ في معالجة الاستجابة";
   } catch (error) {
     console.error("Error generating AI prompt:", error);
     throw new Error("حدث خطأ أثناء توليد البرومت");

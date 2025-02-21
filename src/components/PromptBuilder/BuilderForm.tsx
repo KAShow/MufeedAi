@@ -1,6 +1,8 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { getTrendingSuggestions } from "@/lib/suggestions";
+import { Loader2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Form,
   FormControl,
@@ -12,6 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ChevronRight, ChevronLeft, Sparkles } from "lucide-react";
+import { AI_PROVIDERS } from "@/lib/ai-providers";
+import { getApiKey } from "@/lib/openai";
 
 interface FormData {
   goals: string;
@@ -89,41 +93,20 @@ export default function BuilderForm({
 }: BuilderFormProps) {
   const [currentStep, setCurrentStep] = React.useState(0);
   const [formValues, setFormValues] = React.useState<FormData>(defaultFormData);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = React.useState(false);
+  const [isGeneratingSuggestions, setIsGeneratingSuggestions] =
+    React.useState(false);
+  const [lastClickTime, setLastClickTime] = React.useState<{
+    [key: string]: number;
+  }>({});
+  const { toast } = useToast();
   const [currentExamples, setCurrentExamples] = React.useState<{
     [key: string]: { text: string; isSelected: boolean }[];
-  }>({
-    goals: getTrendingSuggestions("goals").map((text) => ({
-      text,
-      isSelected: false,
-    })),
-    audience: getTrendingSuggestions("audience").map((text) => ({
-      text,
-      isSelected: false,
-    })),
-    requirements: getTrendingSuggestions("requirements").map((text) => ({
-      text,
-      isSelected: false,
-    })),
-    preferences: getTrendingSuggestions("preferences").map((text) => ({
-      text,
-      isSelected: false,
-    })),
-    features: getTrendingSuggestions("features").map((text) => ({
-      text,
-      isSelected: false,
-    })),
-    content: getTrendingSuggestions("content").map((text) => ({
-      text,
-      isSelected: false,
-    })),
-    security: getTrendingSuggestions("security").map((text) => ({
-      text,
-      isSelected: false,
-    })),
-  });
+  }>({});
 
   const currentField = steps[currentStep];
   const currentFieldId = currentField.id as keyof FormData;
+  const debounceTime = 500; // 500ms للحماية من الضغط المتتالي
 
   const form = useForm<FormData>({
     defaultValues: {
@@ -131,6 +114,116 @@ export default function BuilderForm({
       [currentFieldId]: formValues[currentFieldId],
     },
   });
+
+  const isButtonCooldown = (buttonId: string) => {
+    const lastClick = lastClickTime[buttonId] || 0;
+    const now = Date.now();
+    return now - lastClick < debounceTime;
+  };
+
+  const updateLastClickTime = (buttonId: string) => {
+    setLastClickTime((prev) => ({ ...prev, [buttonId]: Date.now() }));
+  };
+
+  const generateAISuggestions = async () => {
+    const defaultSuggestions = [
+      {
+        text: "منصة لتعليم البرمجة للأطفال باستخدام الذكاء الاصطناعي",
+        isSelected: false,
+      },
+      {
+        text: "سوق إلكتروني للمنتجات المستدامة والصديقة للبيئة",
+        isSelected: false,
+      },
+      {
+        text: "منصة لربط المستثمرين برواد الأعمال في مجال التكنولوجيا",
+        isSelected: false,
+      },
+      {
+        text: "تطبيق للرعاية الصحية عن بعد مع دعم الذكاء الاصطناعي",
+        isSelected: false,
+      },
+      { text: "منصة لإدارة وتتبع الأهداف الشخصية والمهنية", isSelected: false },
+    ];
+
+    if (isButtonCooldown("generate") || isGeneratingSuggestions) return;
+    updateLastClickTime("generate");
+    setIsGeneratingSuggestions(true);
+
+    try {
+      const response = await fetch(
+        `${AI_PROVIDERS[0].apiEndpoint}?key=${getApiKey("gemini")}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: `اقترح 5 أفكار مواقع مبتكرة وعصرية. أريد النتيجة بهذا الشكل فقط، بدون أي نص إضافي:\n1. [فكرة الموقع الأول]\n2. [فكرة الموقع الثاني]\n3. [فكرة الموقع الثالث]\n4. [فكرة الموقع الرابع]\n5. [فكرة الموقع الخامس]`,
+                  },
+                ],
+              },
+            ],
+            generationConfig: {
+              temperature: 0.9,
+              maxOutputTokens: 1024,
+            },
+          }),
+        },
+      );
+
+      if (!response.ok) throw new Error();
+
+      const data = await response.json();
+      const suggestions = data.choices?.[0]?.message?.content;
+
+      if (!suggestions) throw new Error();
+
+      // تحويل النص إلى مصفوفة من الاقتراحات
+      const lines = suggestions
+        .split("\n")
+        .map((line) => line.replace(/^\d+\.\s*/, "").trim())
+        .filter((line) => line.length > 0)
+        .map((text) => ({ text, isSelected: false }));
+
+      if (lines.length === 0) throw new Error();
+
+      setCurrentExamples((prev) => ({
+        ...prev,
+        goals: lines,
+      }));
+    } catch (error) {
+      console.error("Failed to generate suggestions:", error);
+      // استخدام الاقتراحات الافتراضية
+      setCurrentExamples((prev) => ({
+        ...prev,
+        goals: defaultSuggestions,
+      }));
+
+      toast({
+        title: "تم استخدام الاقتراحات الافتراضية",
+        description: "سنستخدم مجموعة من الاقتراحات المحددة مسبقاً",
+        variant: "default",
+      });
+    } finally {
+      setIsGeneratingSuggestions(false);
+    }
+  };
+
+  React.useEffect(() => {
+    const initializeSuggestions = async () => {
+      setIsLoadingSuggestions(true);
+      try {
+        await generateAISuggestions();
+      } finally {
+        setIsLoadingSuggestions(false);
+      }
+    };
+
+    initializeSuggestions();
+  }, []);
 
   React.useEffect(() => {
     const subscription = form.watch((value) => {
@@ -148,19 +241,41 @@ export default function BuilderForm({
     form.setValue(currentFieldId, formValues[currentFieldId] || "");
   }, [currentStep]);
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    if (isButtonCooldown("next")) return;
+    updateLastClickTime("next");
+
+    // التحقق من طول النص في الخطوة الأولى
+    if (currentStep === 0) {
+      const goalsText = form.getValues("goals");
+      if (!goalsText || goalsText.trim().length < 5) {
+        toast({
+          title: "النص قصير جداً",
+          description: "يرجى كتابة ما لا يقل عن 5 أحرف",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
   };
 
   const handlePrevious = () => {
+    if (isButtonCooldown("prev")) return;
+    updateLastClickTime("prev");
+
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
   };
 
   const handleExampleClick = (e: React.MouseEvent, index: number) => {
+    if (isButtonCooldown(`example-${index}`)) return;
+    updateLastClickTime(`example-${index}`);
+
     e.preventDefault();
     const currentValue = form.getValues(currentFieldId) || "";
     const examples = currentExamples[currentFieldId];
@@ -191,15 +306,6 @@ export default function BuilderForm({
         shouldTouch: true,
       });
     }
-  };
-
-  const refreshExamples = () => {
-    setCurrentExamples((prev) => ({
-      ...prev,
-      [currentFieldId]: getTrendingSuggestions(
-        currentFieldId as keyof FormData,
-      ).map((text) => ({ text, isSelected: false })),
-    }));
   };
 
   return (
@@ -234,11 +340,35 @@ export default function BuilderForm({
             />
 
             <div className="mt-4">
-              <div className="mb-3">
-                <h3 className="text-base font-medium flex items-center gap-2 text-primary">
-                  <Sparkles className="h-4 w-4 animate-pulse text-yellow-500" />
-                  اقتراحات مفيدة:
-                </h3>
+              <div className="mb-3 flex justify-between items-center">
+                <div className="flex items-center gap-4">
+                  <h3 className="text-base font-medium flex items-center gap-2 text-primary">
+                    {isLoadingSuggestions ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-4 w-4 animate-pulse text-yellow-500" />
+                    )}
+                    {isLoadingSuggestions
+                      ? "جاري توليد اقتراحات ذكية..."
+                      : "اقتراحات مفيدة:"}
+                  </h3>
+                  {currentStep === 0 && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={generateAISuggestions}
+                      disabled={isGeneratingSuggestions}
+                      className="gap-2"
+                    >
+                      {isGeneratingSuggestions ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Sparkles className="h-4 w-4" />
+                      )}
+                      توليد اقتراحات جديدة
+                    </Button>
+                  )}
+                </div>
               </div>
               <div className="flex flex-wrap gap-1 sm:gap-2">
                 {currentExamples[currentFieldId]?.map((example, index) => (

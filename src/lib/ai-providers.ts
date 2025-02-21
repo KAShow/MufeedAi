@@ -10,13 +10,12 @@ export type AIProvider = {
 
 export const AI_PROVIDERS: AIProvider[] = [
   {
-    id: "gemini",
-    name: "Google Gemini",
-    keyPrefix: "AI",
-    apiEndpoint:
-      "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent",
-    keyPlaceholder: "AI...",
-    keyInstructions: "https://makersuite.google.com/app/apikey",
-    model: "gemini-pro",
+    id: "openrouter",
+    name: "OpenRouter",
+    keyPrefix: "sk-or",
+    apiEndpoint: "https://openrouter.ai/api/v1/chat/completions",
+    keyPlaceholder: "sk-or-...",
+    keyInstructions: "https://openrouter.ai/keys",
+    model: "google/gemini-2.0-pro-exp-02-05:free",
   },
 ];
